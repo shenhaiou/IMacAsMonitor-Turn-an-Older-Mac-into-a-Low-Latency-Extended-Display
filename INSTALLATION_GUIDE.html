@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="Haiou Shen">
+  <meta name="description" content="Install and configure IMacAsMonitor to use an older MacBook Pro or iMac as an extended display over Thunderbolt Bridge.">
+  <meta name="keywords" content="iMac as monitor, MacBook Pro second display, macOS extended display, Thunderbolt Bridge, virtual display">
+  <title>IMacAsMonitor Installation and Setup Guide</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --background: #f4f6fa;
+      --surface: #ffffff;
+      --text: #172033;
+      --muted: #5d687b;
+      --line: #dbe1ea;
+      --accent: #1769e0;
+      --accent-soft: #e9f1ff;
+      --success: #087a4b;
+      --success-soft: #e7f7ef;
+      --warning: #8b5700;
+      --warning-soft: #fff4d8;
+      --code: #111827;
+      --code-text: #edf2f7;
+      --shadow: 0 16px 50px rgba(31, 45, 70, 0.09);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: #0c111b;
+        --surface: #151c29;
+        --text: #eef3fb;
+        --muted: #aab5c8;
+        --line: #2a3445;
+        --accent: #73a7ff;
+        --accent-soft: #172d4f;
+        --success: #6bd5a7;
+        --success-soft: #12352b;
+        --warning: #ffd074;
+        --warning-soft: #3b2c12;
+        --code: #080b11;
+        --code-text: #edf2f7;
+        --shadow: 0 18px 55px rgba(0, 0, 0, 0.28);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--text);
+      font: 16px/1.62 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    header {
+      padding: 72px 24px 58px;
+      color: white;
+      background:
+        radial-gradient(circle at 85% 10%, rgba(100, 190, 255, 0.4), transparent 28%),
+        linear-gradient(135deg, #0f3c88, #1769e0 55%, #27a0d8);
+    }
+
+    header .inner, main, footer {
+      width: min(100% - 36px, 940px);
+      margin: 0 auto;
+    }
+
+    h1 {
+      max-width: 760px;
+      margin: 0 0 12px;
+      font-size: clamp(2.25rem, 6vw, 4.2rem);
+      line-height: 1.04;
+      letter-spacing: -0.045em;
+    }
+
+    header p {
+      max-width: 700px;
+      margin: 0;
+      color: rgba(255, 255, 255, 0.88);
+      font-size: 1.12rem;
+    }
+
+    .version {
+      display: inline-block;
+      margin-bottom: 18px;
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    main { padding: 38px 0 70px; }
+
+    nav, section {
+      margin-bottom: 24px;
+      padding: 28px clamp(22px, 5vw, 44px);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    nav strong { display: block; margin-bottom: 10px; }
+
+    nav a {
+      display: inline-block;
+      margin: 4px 18px 4px 0;
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    nav a:hover { text-decoration: underline; }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.65rem;
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+    }
+
+    h3 { margin: 26px 0 8px; font-size: 1.12rem; }
+
+    p { margin: 10px 0; }
+
+    ol, ul { padding-left: 1.45rem; }
+    li { margin: 9px 0; padding-left: 3px; }
+
+    code {
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: var(--accent-soft);
+      color: var(--text);
+      font: 0.92em ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    pre {
+      position: relative;
+      overflow-x: auto;
+      margin: 14px 0;
+      padding: 17px 19px;
+      border-radius: 12px;
+      background: var(--code);
+      color: var(--code-text);
+      font: 0.92rem/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    pre code { padding: 0; background: transparent; color: inherit; }
+
+    .callout {
+      margin: 18px 0;
+      padding: 15px 18px;
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      background: var(--accent-soft);
+    }
+
+    .callout.success { border-color: var(--success); background: var(--success-soft); }
+    .callout.warning { border-color: var(--warning); background: var(--warning-soft); }
+
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin: 18px 0;
+    }
+
+    .role {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .role strong { display: block; margin-bottom: 5px; font-size: 1.05rem; }
+    .role p { margin: 0; color: var(--muted); }
+
+    .flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 20px 0;
+      color: var(--muted);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .flow span {
+      flex: 1;
+      padding: 13px 9px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--background);
+    }
+
+    .checklist { list-style: none; padding-left: 0; }
+    .checklist li::before { content: "✓"; margin-right: 10px; color: var(--success); font-weight: 800; }
+
+    footer { padding-bottom: 55px; color: var(--muted); text-align: center; }
+
+    @media (max-width: 650px) {
+      header { padding-top: 50px; }
+      .role-grid { grid-template-columns: 1fr; }
+      .flow { flex-direction: column; }
+      .flow span { width: 100%; }
+      .flow b { transform: rotate(90deg); }
+    }
+
+    @media print {
+      body { background: white; color: black; }
+      header { padding: 28px 0; color: black; background: none; }
+      header p { color: #333; }
+      .version { border-color: #999; background: none; }
+      nav { display: none; }
+      section { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="inner">
+      <span class="version">IMacAsMonitor 0.5.0</span>
+      <h1>Installation and setup guide</h1>
+      <p>Use a 2017 MacBook Pro—or later your 2017 iMac—as an extended display for the M1 Max MacBook Pro over Thunderbolt Bridge.</p>
+    </div>
+  </header>
+
+  <main>
+    <nav aria-label="Guide contents">
+      <strong>Contents</strong>
+      <a href="#requirements">Requirements</a>
+      <a href="#install">Install</a>
+      <a href="#network">Thunderbolt Bridge</a>
+      <a href="#connect">Connect automatically</a>
+      <a href="#address">Find the receiver IP</a>
+      <a href="#use">Use and quit</a>
+      <a href="#troubleshooting">Troubleshooting</a>
+    </nav>
+
+    <section id="requirements">
+      <h2>1. What you need</h2>
+      <div class="role-grid">
+        <div class="role">
+          <strong>Source Mac</strong>
+          <p>16-inch M1 Max MacBook Pro. It creates and captures the virtual extended display.</p>
+        </div>
+        <div class="role">
+          <strong>Receiver Mac</strong>
+          <p>2017 MacBook Pro. It decodes the video and displays it full-screen.</p>
+        </div>
+      </div>
+      <ul class="checklist">
+        <li>A Thunderbolt cable connecting the two Macs</li>
+        <li><code>IMacAsMonitor-0.5.0.zip</code></li>
+        <li>Administrator access for macOS privacy and firewall settings</li>
+        <li>Both Macs connected to power for the first test</li>
+      </ul>
+      <div class="callout warning">
+        The virtual display uses an undocumented macOS interface. This is appropriate for a personal, locally installed tool, but a future macOS update could require changes.
+      </div>
+    </section>
+
+    <section id="install">
+      <h2>2. Install the app on both Macs</h2>
+      <ol>
+        <li>Quit any older version of IMacAsMonitor on both Macs. Press <strong>Command-Q</strong>, or run <code>killall IMacAsMonitor</code> in Terminal for an older version that will not quit.</li>
+        <li>Double-click <code>IMacAsMonitor-0.5.0.zip</code> to extract it.</li>
+        <li>Drag <strong>IMacAsMonitor.app</strong> into the <strong>Applications</strong> folder.</li>
+        <li>Copy the same ZIP file to the 2017 Mac and repeat these steps there.</li>
+        <li>For the first launch, Control-click the app, choose <strong>Open</strong>, and confirm <strong>Open</strong> if macOS warns that it was not downloaded from the App Store.</li>
+      </ol>
+
+      <h3>Permissions on the source M1 Mac</h3>
+      <ul>
+        <li>Allow <strong>Local Network</strong> access if requested.</li>
+        <li>Allow <strong>Screen Recording</strong> in <strong>System Settings → Privacy &amp; Security → Screen Recording</strong>.</li>
+        <li>If you just enabled Screen Recording, quit and reopen IMacAsMonitor.</li>
+      </ul>
+
+      <h3>Permissions on the receiver Mac</h3>
+      <ul>
+        <li>Allow <strong>Local Network</strong> access if requested.</li>
+        <li>If the firewall asks, choose <strong>Allow incoming connections</strong>.</li>
+      </ul>
+    </section>
+
+    <section id="network">
+      <h2>3. Check Thunderbolt Bridge</h2>
+      <ol>
+        <li>Connect the Macs directly with the Thunderbolt cable.</li>
+        <li>On each Mac, open <strong>System Settings → Network</strong>.</li>
+        <li>Select <strong>Thunderbolt Bridge</strong>.</li>
+        <li>Confirm that its status is connected or active.</li>
+      </ol>
+      <div class="callout success">
+        An address beginning with <code>169.254.</code> is normal. It is a self-assigned link-local address used for the direct connection and does not mean the connection failed.
+      </div>
+      <div class="flow" aria-label="Connection flow">
+        <span>M1 Max<br>Source</span>
+        <b>⇄</b>
+        <span>Thunderbolt Bridge<br><code>bridge0</code></span>
+        <b>⇄</b>
+        <span>2017 Mac<br>Receiver</span>
+      </div>
+    </section>
+
+    <section id="connect">
+      <h2>4. Connect automatically</h2>
+      <ol>
+        <li>On the <strong>2017 MacBook Pro</strong>, open IMacAsMonitor and click <strong>Start Receiver</strong>.</li>
+        <li>Wait until its status says that the receiver is advertised automatically.</li>
+        <li>On the <strong>M1 Max</strong>, open IMacAsMonitor.</li>
+        <li>Leave <strong>Receiver address (optional)</strong> empty.</li>
+        <li>Leave <strong>Create a virtual extended display</strong> selected.</li>
+        <li>Click <strong>Start Source</strong>.</li>
+      </ol>
+      <p>The source uses Bonjour to discover the receiver. It prefers the Thunderbolt Bridge interface named <code>bridge0</code>. A successful status resembles:</p>
+      <pre><code>Found Haious-MacBook-Pro via bridge0. Connecting…</code></pre>
+      <p>The receiver then reports its logical resolution, backing-pixel resolution, and refresh rate. The source uses that information to create and stream the virtual display.</p>
+    </section>
+
+    <section id="address">
+      <h2>5. Find the receiver’s IP address manually</h2>
+      <p>You normally do not need an IP address with version 0.5.0. Use these instructions only if automatic discovery does not find the receiver.</p>
+
+      <h3>Method A — System Settings</h3>
+      <ol>
+        <li>On the <strong>receiver</strong>, open <strong>System Settings → Network</strong>.</li>
+        <li>Select <strong>Thunderbolt Bridge</strong>.</li>
+        <li>Click <strong>Details</strong>, then select <strong>TCP/IP</strong>.</li>
+        <li>Copy the <strong>IPv4 Address</strong>. It should look similar to <code>169.254.143.183</code>.</li>
+        <li>Enter that address in the source Mac’s optional receiver-address field, then click <strong>Start Source</strong>.</li>
+      </ol>
+
+      <h3>Method B — Terminal</h3>
+      <p>Open Terminal on the receiver and run:</p>
+      <pre><code>ipconfig getifaddr bridge0</code></pre>
+      <p>If that produces no output, inspect the interface directly:</p>
+      <pre><code>ifconfig bridge0 | grep "inet "</code></pre>
+      <p>Example output:</p>
+      <pre><code>inet 169.254.143.183 netmask 0xffff0000 broadcast 169.254.255.255</code></pre>
+      <p>The receiver address in this example is <code>169.254.143.183</code>.</p>
+
+      <h3>Verify the connection from the source</h3>
+      <p>Replace the example address if yours is different:</p>
+      <pre><code>ping -c 4 169.254.143.183</code></pre>
+      <p>Replies confirm basic IP connectivity. A new link-local address may be assigned after disconnecting or restarting the Macs, which is why automatic discovery is preferred.</p>
+    </section>
+
+    <section id="use">
+      <h2>6. Arrange and use the extended display</h2>
+      <ol>
+        <li>On the M1 Max, open <strong>System Settings → Displays → Arrange</strong>.</li>
+        <li>Place <strong>IMacAsMonitor Extended Display</strong> to the left or right of the M1 display.</li>
+        <li>Move the source pointer or drag a window across that edge.</li>
+        <li>The 2017 Mac displays the virtual desktop full-screen. Its menu bar and Dock hide automatically.</li>
+      </ol>
+      <div class="callout">
+        Use the M1 Mac’s keyboard and trackpad to control the extended desktop. Input forwarding from the receiver is not implemented yet.
+      </div>
+
+      <h3>Stop or quit</h3>
+      <ul>
+        <li>Press <strong>Escape</strong> on the receiver to leave presentation mode and restore its menu bar and Dock.</li>
+        <li>Click <strong>Stop</strong> to end the current session without quitting.</li>
+        <li>Press <strong>Command-Q</strong>, click <strong>Quit</strong>, or close the control window to terminate the app cleanly.</li>
+      </ul>
+    </section>
+
+    <section id="troubleshooting">
+      <h2>7. Troubleshooting</h2>
+      <h3>The source keeps searching</h3>
+      <ul>
+        <li>Start the receiver before the source.</li>
+        <li>Confirm both Macs are running version 0.5.0.</li>
+        <li>Allow Local Network access and incoming firewall connections.</li>
+        <li>Confirm Thunderbolt Bridge is active on both Macs.</li>
+        <li>Use the receiver’s manual <code>169.254.x.x</code> address.</li>
+      </ul>
+
+      <h3>The connection works, but there is no video</h3>
+      <ul>
+        <li>Enable Screen Recording permission on the source M1 Mac.</li>
+        <li>Quit and reopen the source app after changing that permission.</li>
+        <li>Clear the virtual-display checkbox and try mirror mode. This separates a virtual-display problem from a capture or network problem.</li>
+      </ul>
+
+      <h3>The image does not fill the screen</h3>
+      <p>The receiver reports its current logical and Retina backing resolutions. Check its display scaling in <strong>System Settings → Displays</strong>, stop both roles, and reconnect after changing the scaling.</p>
+
+      <h3>The old app will not quit</h3>
+      <p>Open Terminal on that Mac and run:</p>
+      <pre><code>killall IMacAsMonitor</code></pre>
+      <p>Version 0.5.0 supports Command-Q and normal window-close termination.</p>
+    </section>
+  </main>
+
+  <footer>
+    IMacAsMonitor 0.5.0 · Developed by Haiou Shen · Experimental display streaming over Thunderbolt Bridge
+  </footer>
+</body>
+</html>
